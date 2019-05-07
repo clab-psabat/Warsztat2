@@ -35,9 +35,9 @@ class User:
             return True
         else:
                 sql = """UPDATE Users SET username=%s, email=%s, hashed_password=%s
-                         WHERE id = % s """
+                         WHERE id=%s"""
                 values = (self.username, self.email, self.hashed_password, self.id)
-                cursos.execute(sql, values)
+                cursor.execute(sql, values)
         return False
 
     @staticmethod
@@ -72,5 +72,5 @@ class User:
     def delete(self, cursor):
         sql = "DELETE FROM Users WHERE id=%s"
         cursor.execute(sql, (self.__id,))
-        self.__if = -1
+        self.__id = -1
         return None

@@ -80,22 +80,3 @@ def check_password(pass_to_check, hashed):
         return False
 
 
-salt=generate_salt()
-print(salt)
-
-my_pass = "alamakota1"
-my_pass_hashed = password_hash(my_pass, salt)
-print(my_pass_hashed)
-
-check = check_password("alamakota1", my_pass_hashed)
-print(check)
-
-
-salt = generate_salt()
-print(salt)
-passwd = password_hash('qwer234!', generate_salt())
-print(passwd)
-
-print(check_password('qwer234!', 'hzLHdLiAdbz5LgNI3383d71a6a80ec86671a8e1e3e76195152914982f70b7ec0f25e8dd1f9a7e4e7'))
-print(check_password('qwer234!', 'elsIwi6cBJE21GWc4b62fbe586158f1f56fa68b3137b2526bfdc2567dd7f03d7390409eae306f7a7'))
-print(check_password('qwer234!', passwd))
