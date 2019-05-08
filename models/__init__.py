@@ -1,5 +1,6 @@
 
 from clcrypto import password_hash, check_password
+form datetime import datetime
 
 
 class User:
@@ -35,7 +36,7 @@ class User:
             return True
         else:
                 sql = """UPDATE Users SET username=%s, email=%s, hashed_password=%s
-                         WHERE id = % s """
+                         WHERE id = %s """
                 values = (self.username, self.email, self.hashed_password, self.id)
                 cursos.execute(sql, values)
         return False
@@ -74,3 +75,63 @@ class User:
         cursor.execute(sql, (self.__id,))
         self.__if = -1
         return None
+    
+class Message:
+    __id = None
+    text = None
+    from_id = None
+    to_id = None
+    __is_visible = None
+    __creation_date = None 
+
+    def __init__(self):
+        self.__id = -1
+        self.text = ""
+        self.from_id = ""
+        self.to_id = ""
+        self.__is_visible = True
+        self.__creation_date = datetime.utcnow
+    
+    @property
+    def id(self):
+        return self.__id
+    
+    @property
+    def is_visible(self):
+        return self.__is_visible
+    
+    @property
+    def creation_date(self):
+        return self.__creation_date
+    
+    @staticmethod
+    def load_message_by_id(cursor, message_id):
+        sql = "SELECT id, text, from_id, to_id, is_visible, creation_date FROM Messages WHERE id=%s"
+        cursor.execute(sql, (message_id,))
+        data = cursor.fetchone()
+        if data:
+            loaded_message = Message()
+            loaded_mesage.__id = data[0]
+            loaded_message.text = data[1]
+            loaded_message.from_id = data[2]
+            loaded_message.to_id = data[3]
+            loaded_message.__is_visible = data[4]
+            loaded_message.__creation_date = data[5]
+            return loaded_message
+        else:
+            return None
+        
+    @staticmethod
+    def load_all_messages_for_user(cursor, user_id):
+        all_messages = list()
+        sql = "SELECT id, text, from_id, to_id, is_visible, creation_date FROM Messages WHERE to_id=%s"
+        cursor.execute(sql, (user_id,))
+        data = cursor.fetchall()
+        for row in data:
+            //create helper function create message instance
+        
+        
+        
+        
+        
+    
