@@ -37,16 +37,13 @@ class User:
         else:
                 sql = """UPDATE Users SET username=%s, email=%s, hashed_password=%s
                          WHERE id = %s """
-                values = (self.username, self.email, self.hashed_password, self.id)
-                cursos.execute(sql, values)
+                values = (self.username, self.email, self.hashed_password, self.__id)
+                cursor.execute(sql, values)
         return False
-
+    
     @staticmethod
-    def load_user_by_id(cursor, user_id):
-        sql = "SELECT id, username, email. hashed_password FROM users WHERE id=%s"
-        cursor.execute(sql, (user_id,))
-        data = cursor.fetchone()
-        if data:
+    def load_user(data):
+         if data:
             loaded_user = User()
             loaded_user.__id = data[0]
             loaded_user.username = data[1]
@@ -57,23 +54,25 @@ class User:
             return None
     
     @staticmethod
+    def load_user_by_id(cursor, user_id):
+        sql = "SELECT id, username, email, hashed_password FROM users WHERE id=%s"
+        cursor.execute(sql, (user_id,))
+        data = cursor.fetchone()
+        return load_user(data)
+    
+    @staticmethod
     def load_all_users(cursor):
         sql = "SELECT id, username, email, hashed_password FROM Users"
-        ret = []
+        all_users = list()
         cursor.execute(sql)
         for row in cursor.fetchall():
-            loaded_user = User()
-            loaded_user.__id = row[0]
-            loaded_user.username = row[1]
-            loaded_user.email = row[2]
-            loaded_user.__hashed_password = row[3]
-            ret.append(loaded_user)
-        return ret
+            all_users.append(load_user(row))
+        return all_users
     
     def delete(self, cursor):
         sql = "DELETE FROM Users WHERE id=%s"
         cursor.execute(sql, (self.__id,))
-        self.__if = -1
+        self.__id = -1
         return None
     
 class Message:
@@ -105,10 +104,7 @@ class Message:
         return self.__creation_date
     
     @staticmethod
-    def load_message_by_id(cursor, message_id):
-        sql = "SELECT id, text, from_id, to_id, is_visible, creation_date FROM Messages WHERE id=%s"
-        cursor.execute(sql, (message_id,))
-        data = cursor.fetchone()
+    def load_message(data):
         if data:
             loaded_message = Message()
             loaded_mesage.__id = data[0]
@@ -120,6 +116,14 @@ class Message:
             return loaded_message
         else:
             return None
+    
+    @staticmethod
+    def load_message_by_id(cursor, message_id):
+        sql = "SELECT id, text, from_id, to_id, is_visible, creation_date FROM Messages WHERE id=%s"
+        cursor.execute(sql, (message_id,))
+        data = cursor.fetchone()
+        return load_message(data)
+        
         
     @staticmethod
     def load_all_messages_for_user(cursor, user_id):
@@ -128,7 +132,41 @@ class Message:
         cursor.execute(sql, (user_id,))
         data = cursor.fetchall()
         for row in data:
-            //create helper function create message instance
+            all_messages.append(load_message(row))
+        return all_messages
+    
+    @staticmethod
+    def load_all_messages_by_user(cursor, user_id):
+        all_messages = list()
+        sql = "SELECT id, text, from_id, to_id, is_visible, creation_date FROM Messages WHERE from_id=%s"
+        cursor.execute(sql, (user_id,))
+        data = cursor.fetchall()
+        for row in data:
+            all_messages.append(load_message(row))
+        return all_messages
+    
+    def delete_by_sender(self, cursor):
+        sql = "DELETE FROM Messages WHERE id=%s"
+        cursor.execute(sql, (self.__id,))
+        self.__id = -1
+        return None     
+    
+    def save_to_db(self, cursor):
+        if self.__id == -1:
+            sql = """INSERT INTO Messages(text, from_id, to_id, is_visible, creation_date)
+                     VALUES(%s, %s, %s, %s, %s) RETURNING id"""
+            values = (self.text, self.from_id, self.to_id, self.__is_visible, self.__creation_date)
+            cursor.execute(sql, values)
+            self.__id = cursor.fetchone()[0]
+            return True
+        else:
+                sql = """UPDATE Messages SET text=%s, from_id=%s, to_id=%s, is_visible=%s,
+                         WHERE id = %s"""
+                values = (self.text, self.from_id, self.to_id, self.__is_visible, self.__id))
+                cursor.execute(sql, values)
+        return False
+    
+    
         
         
         
