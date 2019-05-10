@@ -1,29 +1,11 @@
-from models import User
-from psycopg2 import connect
+from models import User, connector
+
 from argparse import ArgumentParser
 from clcrypto import password_hash, check_password
 
-username = 'postgres'
-passwd = 'coderslab'
-hostname = '127.0.0.1'
-db_name = 'message_server'
 
 
-def connector(func):
-    def wrapper(*args, **kwargs):
-        cnx = connect(user=username,
-                      password=passwd,
-                      host=hostname,
-                      database=db_name)
-        cnx.autocommit = True
-        _cursor = cnx.cursor()
-        operation = func(_cursor, *args, **kwargs)
 
-        _cursor.close()
-        cnx.close()
-        return operation
-
-    return wrapper
 
 
 def set_parser_arguments():
@@ -37,8 +19,8 @@ def set_parser_arguments():
     parser.add_argument('-l', '--list', help='show all users in database')
     parser.add_argument('-d', '--delete', help='delete your account. Only if login/pass validation is successful')
     parser.add_argument('-e', '--edit', type=str, help='change your username')
-
     return parser
+
 
 @connector
 def create_new_user(_cursor, username, password, email):
