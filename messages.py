@@ -1,11 +1,6 @@
-from models import User, connector
-
+from models import User, Message, connector
 from argparse import ArgumentParser
 from clcrypto import password_hash, check_password
-
-
-
-
 
 
 def set_parser_arguments():
@@ -16,7 +11,7 @@ def set_parser_arguments():
     parser.add_argument('-p', '--password', type=str, help='write your password to log in and use program features')
     parser.add_argument('-n', '--new-pass', type=str, help="""changing your password. Only if login/pass validation is
                                                            successful""")
-    parser.add_argument('-l', '--list', help='show all users in database')
+    parser.add_argument('-l', '--list', help='show all users in database', action="store_true")
     parser.add_argument('-d', '--delete', help='delete your account. Only if login/pass validation is successful')
     parser.add_argument('-e', '--edit', type=str, help='change your username')
     return parser

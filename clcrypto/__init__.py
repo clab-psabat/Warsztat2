@@ -7,6 +7,18 @@ ALPHABET is a global variable, that keeps all uppercase letter, all lowercase
 letters and digits.
 """
 ALPHABET = string.ascii_uppercase + string.ascii_lowercase + string.digits
+PASSWORD_MIN_LENGTH = 8
+
+
+def is_password_correct(password):
+    if len(password) < PASSWORD_MIN_LENGTH:
+        print('New password is too short. Password has to be at least {} chars long'.format(PASSWORD_MIN_LENGTH))
+        return False
+    for char in password:
+        if char not in ALPHABET:
+            print('Wrong type of char in new pass. Acceptable chars are uppercase, lowercase letters and digits')
+            return False
+    return True
 
 
 def generate_salt():
@@ -77,6 +89,7 @@ def check_password(pass_to_check, hashed):
     if new_hash[16:] == hash_to_check:
         return True
     else:
+        print('Logging error, wrong password. Try again')
         return False
 
 

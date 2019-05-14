@@ -1,9 +1,10 @@
-from psycopg2 import connect
 from clcrypto import password_hash, check_password
 from datetime import datetime
+from psycopg2 import connect
 import os
 
-username = os.environ.get('POSTGRES_USERNAME')
+
+db_username = os.environ.get('POSTGRES_USERNAME')
 passwd = os.environ.get('POSTGRES_PASSWORD')
 hostname = os.environ.get('POSTGRES_HOST')
 db_name = os.environ.get('POSTGRES_DB_NAME')
@@ -11,14 +12,13 @@ db_name = os.environ.get('POSTGRES_DB_NAME')
 
 def connector(func):
     def wrapper(*args, **kwargs):
-        cnx = connect(user=username,
+        cnx = connect(user=db_username,
                       password=passwd,
                       host=hostname,
                       database=db_name)
-        cnx.autocommit = True
         _cursor = cnx.cursor()
         operation = func(_cursor, *args, **kwargs)
-
+        cnx.commit()
         _cursor.close()
         cnx.close()
         return operation
@@ -30,12 +30,10 @@ class User:
     __id = None
     username = None
     __hashed_password = None
-    email = None
 
     def __init__(self):
         self.__id = -1
         self.username = ""
-        self.email = ""
         self.__hashed_password = ""
 
     @property
@@ -51,45 +49,51 @@ class User:
 
     def save_to_db(self, cursor):
         if self.__id == -1:
-            sql = """INSERT INTO Users(username, email, hashed_password)
-                     VALUES(%s, %s, %s) RETURNING id;"""
-            values = (self.username, self.email, self.hashed_password)
+            sql = """INSERT INTO Users(username, hashed_password)
+                     VALUES(%s, %s) RETURNING id;"""
+            values = (self.username, self.__hashed_password)
             cursor.execute(sql, values)
             self.__id = cursor.fetchone()[0]
             return True
         else:
-                sql = """UPDATE Users SET username = %s, email = %s, hashed_password = %s
+                sql = """UPDATE Users SET username = %s, hashed_password = %s
                          WHERE id = %s;"""
-                values = (self.username, self.email, self.hashed_password, self.__id)
+                values = (self.username, self.__hashed_password, self.__id)
                 cursor.execute(sql, values)
         return False
     
     @staticmethod
-    def load_user(data):
+    def loaded_user(data):
         if data:
             loaded_user = User()
             loaded_user.__id = data[0]
             loaded_user.username = data[1]
-            loaded_user.email = data[2]
-            loaded_user.__hashed_password = data[3]
+            loaded_user.__hashed_password = data[2]
             return loaded_user
         else:
             return None
+
+    @staticmethod
+    def load_user_by_username(cursor, username):
+        sql = "SELECT id, username, hashed_password FROM users WHERE username=%s"
+        cursor.execute(sql, (username,))
+        data = cursor.fetchone()
+        return User.loaded_user(data)
     
     @staticmethod
     def load_user_by_id(cursor, user_id):
-        sql = "SELECT id, username, email, hashed_password FROM users WHERE id=%s;"
+        sql = "SELECT id, username, hashed_password FROM users WHERE id=%s;"
         cursor.execute(sql, (user_id,))
         data = cursor.fetchone()
-        return User.load_user(data)
+        return User.loaded_user(data)
     
     @staticmethod
     def load_all_users(cursor):
-        sql = "SELECT id, username, email, hashed_password FROM Users;"
+        sql = "SELECT id, username, hashed_password FROM Users;"
         all_users = list()
         cursor.execute(sql)
         for row in cursor.fetchall():
-            all_users.append(User.load_user(row))
+            all_users.append(User.loaded_user(row))
         return all_users
     
     def delete(self, cursor):
@@ -189,11 +193,9 @@ class Message:
             values = (self.text, self.from_id, self.to_id, self.__is_visible, self.__id)
             cursor.execute(sql, values)
         return False
-    
-    
-        
-        
-        
-        
-        
-    
+
+
+
+
+
+
