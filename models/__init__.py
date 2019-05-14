@@ -1,4 +1,4 @@
-from clcrypto import password_hash, check_password
+from clcrypto import password_hash
 from datetime import datetime
 from psycopg2 import connect
 import os
@@ -117,7 +117,7 @@ class Message:
         self.from_id = ""
         self.to_id = ""
         self.__is_visible = True
-        self.__creation_date = datetime.utcnow
+        self.__creation_date = datetime.utcnow()
     
     @property
     def id(self):
@@ -130,6 +130,9 @@ class Message:
     @property
     def creation_date(self):
         return self.__creation_date
+
+    def recipient_delete_message(self):
+        self.__is_visible = False
     
     @staticmethod
     def load_message(data):
@@ -160,7 +163,9 @@ class Message:
         cursor.execute(sql, (user_id,))
         data = cursor.fetchall()
         for row in data:
-            all_messages.append(Message.load_message(row))
+            message = Message.load_message(row)
+            if message.is_visible:
+                all_messages.append(message)
         return all_messages
     
     @staticmethod
@@ -175,7 +180,7 @@ class Message:
     
     def delete_by_sender(self, cursor):
         sql = "DELETE FROM Messages WHERE id=%s;"
-        cursor.execute(sql, (self.__id,))
+        cursor.execute(sql, (self.id,))
         self.__id = -1
         return None     
     
@@ -183,16 +188,17 @@ class Message:
         if self.__id == -1:
             sql = """INSERT INTO Messages(text, from_id, to_id, is_visible, creation_date)
                      VALUES(%s, %s, %s, %s, %s) RETURNING id;"""
-            values = (self.text, self.from_id, self.to_id, self.__is_visible, self.__creation_date)
+            values = (self.text, self.from_id, self.to_id, self.is_visible, self.creation_date)
             cursor.execute(sql, values)
             self.__id = cursor.fetchone()[0]
             return True
         else:
             sql = """UPDATE Messages SET text = %s, from_id = %s, to_id = %s, is_visible = %s
                          WHERE id=%s;"""
-            values = (self.text, self.from_id, self.to_id, self.__is_visible, self.__id)
+            values = (self.text, self.from_id, self.to_id, self.is_visible, self.id)
             cursor.execute(sql, values)
         return False
+
 
 
 

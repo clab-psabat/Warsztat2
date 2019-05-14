@@ -1,17 +1,7 @@
 from models import User, connector
-from argparse import *
-from clcrypto import check_password, is_password_correct
-
-
-@connector
-def load_user(_cursor, username=None, id=None):
-    if username:
-        return User().load_user_by_username(_cursor, username)
-    elif id:
-        return User().load_user_by_id(_cursor, id)
-    else:
-        return None
-
+from argparse import ArgumentParser
+from clcrypto import is_password_correct
+from helpers import load_user, args_to_be_empty, args_required, logging_user
 
 @connector
 def save_new_user(_cursor, username, password):
@@ -32,9 +22,11 @@ def change_password(_cursor, user, new_password):
         print('Password changed!')
 
 
+
 @connector
 def delete_user(_cursor, user):
     user.delete(_cursor)
+    print('user deleted!')
 
 
 @connector
@@ -53,22 +45,10 @@ def create_new_user(_cursor, username, password, email):
     new_user.save_to_db(_cursor)
 
 
-def args_required(*args):
-    for arg in args:
-        if not arg:
-            return False
-    return True
 
 
-def args_to_be_empty(*args):
-    for arg in args:
-        if arg:
-            return False
-    return True
 
-
-def main(parser):
-
+def user_main(parser):
     args = parser.parse_args()
     username = args.username
     password = args.password
@@ -87,22 +67,16 @@ def main(parser):
             return
 
     elif args_required(username, password, edit, new_pass) and args_to_be_empty(delete, users_list):
-        if not user:
-            print('No such user in database')
-            return
-        elif not check_password(password, user.hashed_password):
-            return
-        else:
+        if logging_user(user, password):
             return change_password(user, new_pass)
+        else:
+            return
 
     elif args_required(username, password, delete) and args_to_be_empty(new_pass, users_list, edit):
-        if not user:
-            print('No such user in database')
-            return
-        elif not check_password(password, user.hashed_password):
-            return
-        else:
+        if logging_user(user, password):
             return delete_user(user)
+        else:
+            return
 
     elif args_required(users_list):
         return load_all_users_in_db()
@@ -120,11 +94,12 @@ def set_parser_arguments():
     parser.add_argument('-n', '--newpass', type=str, help="""changing your password. Only if login/pass validation is
                                                            successful""")
     parser.add_argument('-l', '--list', help='show all users in database', action="store_true")
-    parser.add_argument('-d', '--delete', type=str, help='delete your account. Only if login/pass validation is successful')
+    parser.add_argument('-d', '--delete', help='delete your account. Only if login/pass validation is successful',
+                        action='store_true')
     parser.add_argument('-e', '--edit', help='edit your user profile - change password. User -n parameter to pass new password',
                         action="store_true")
     return parser
 
 
 parser = set_parser_arguments()
-main(parser)
+user_main(parser)
