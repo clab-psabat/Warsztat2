@@ -11,6 +11,15 @@ PASSWORD_MIN_LENGTH = 8
 
 
 def is_password_correct(password):
+    """
+    Check if password meets requirements.
+    Standard requirements are passed through global variables
+    Length and Alphabet (which chars are allowed)
+    Prints errors
+
+    :param password: password to be checked, string type
+    :return: boolean - True if password meets requirements, False if not.
+    """
     if len(password) < PASSWORD_MIN_LENGTH:
         print('New password is too short. Password has to be at least {} chars long'.format(PASSWORD_MIN_LENGTH))
         return False
@@ -24,12 +33,11 @@ def is_password_correct(password):
 def generate_salt():
     """
     Generates a 16-character random salt.
+
     :return: str with generated salt
     """
     salt = ""
     for i in range(0, 16):
-
-        # get a random element from the iterable
         salt += random.choice(ALPHABET)
     return salt
 
