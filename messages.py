@@ -1,3 +1,5 @@
+-- module docstring describing why this file is for would be nice
+
 from models import Message, connector
 from argparse import ArgumentParser
 from helpers import load_user, args_to_be_empty, args_required, logging_user
@@ -10,12 +12,18 @@ def load_user_messages(_cursor, user):
     Prints them into console, one message per line.
 
     :param _cursor: parameter passed with connector decorator
+    -- this description tells from where to get given parameter
+    -- it still does not say what this parameter is, what is does
+    -- the same goes for all docstrings in all functions
     :param user: User class object , passed by main()
+    -- you cannot assume that some function will *always* be called by some other specific function
     :return: function has no return. Prints all messages into console instead.
+    -- it either returns None or sth, telling that is prints in descrption of return statement is unnecessary
     """
     sent_messages = Message.load_all_messages_by_user(_cursor, user.id)
     received_messages = Message.load_all_messages_for_user(_cursor, user.id)
     print("Sent messages".center(40, '-'))
+    -- nice formatting function, I didn't know it exists :)
     for message in sent_messages:
         print("id: {}; sent to: {};\nTime: {}\nMessage: {}\n".format(message.id,
                                                                      message.to_id,
@@ -29,18 +37,23 @@ def load_user_messages(_cursor, user):
                                                                   message.creation_date,
                                                                   message.text))
         print('-' * 40)
+        -- you are using the same number 40 a few times, perhaps you would like to move it to some variable with
+        -- some meaningful name
 
 
 @connector
 def send_message(_cursor, user, to_user, message_text):
     """
     Sends message using Message-class methods. Launched by main().
+    -- again don't assume being called by main()
 
     :param _cursor: parameter passed with connector decorator
     :param user: User class object , passed by main()
     :param to_user: recipient user id, string type
+    -- you can tell type of parameter by typing :type to_user: string
     :param message_text: message text, string type
     :return: function prints success statement if message is sent
+    -- function prints, but what does it return?
     """
     recipient = load_user(id=to_user)
     if not recipient:
@@ -51,6 +64,7 @@ def send_message(_cursor, user, to_user, message_text):
     new_message.text = message_text
     new_message.from_id = user.id
     new_message.save_to_db(_cursor)
+    -- sending a message is by saving it to a databse? this looks very unintuitive. can it be resolved somehow?
     print('Message sent!')
 
 
@@ -73,9 +87,13 @@ def delete_message(_cursor, user, message_id):
     :param user: User class object , user which request delete message
     :param message_id: message ID to be deleted, string type
     :return: function has no return, prints fail/success statemetns
+    -- return does not print
     """
     message = Message().load_message_by_id(_cursor, message_id)
 
+    
+    -- scenarios are described in docstring, but when you add or remove a scenario, then you must modify
+    -- sourcecode in two places. thus it is better to keep description of scenarios directly in code as comments
     # Scenario no. 1
     if not message:
         print('Message ID not found, please check and try again')
@@ -132,12 +150,15 @@ def main(parser):
     user = load_user(username)
 
     # Shield conditions
+    -- you probably meant preconditions, eventually asserts
     if not user:
         print('Invalid login')
         return
     if logging_user(user, password) is False:
+        -- no error message for a user?
         return
 
+    -- same comment about scenarios as above
     # Scenario no. 1
     if args_required(username, password, messages_list) and args_to_be_empty(to_user, message_text, delete):
         return load_user_messages(user)
@@ -152,6 +173,7 @@ def main(parser):
 
     # Scenario no. 4
     else:
+        -- printing help manually and then calling parser.print_help() seems a bit too much
         print("""You have used wrong arguments combination. See below scenarios:
         -u USERNAME -p PASSWORD -l | lists all messages, sent and received
         -u USERNAME -p PASSWORD -to TO -s SEND| sends new message -to target user id with -s message text
@@ -165,6 +187,7 @@ def set_parser_arguments():
     Sets all parser arguments. If you want to add more - add in this function and then add scenario to main()
 
     :return: ArgumentParser class object which is used in main()
+    -- where this object is used is of no concern for this function
     """
     parser = ArgumentParser()
     parser.add_argument('-u', '--username', type=str, help='write your username')
@@ -176,6 +199,6 @@ def set_parser_arguments():
     parser.add_argument('-d', '--delete', type=str, help='delete message, pass message id')
     return parser
 
-
+-- adding if __name__ == '__main__' mantra would be nice here
 parser_args = set_parser_arguments()
 main(parser_args)
