@@ -2,6 +2,7 @@ from models import User, connector
 from clcrypto import check_password
 
 # Functions here are user by both programs, users and messages. Stored here to have more control over them
+-- Myślałem że users i messages są dwoma częściami tego samego programu, a nie dwoma osobnymi programami.
 
 @connector
 def load_user(_cursor, username=None, id=None):
@@ -16,8 +17,10 @@ def load_user(_cursor, username=None, id=None):
     """
     if username:
         return User().load_user_by_username(_cursor, username)
+        -- nie musisz tworzyć obiektu żeby używać metod statycznych klasy
     elif id:
         return User().load_user_by_id(_cursor, id)
+        -- to samo co wyżej
     else:
         return None
 
@@ -30,7 +33,9 @@ def args_required(*args):
     :param args: parser arguments passed by main() from users or messages program
     :return: True if all args passed are not None, otherwise False
     """
+    -- maybe some comment here how it works?
     for arg in args:
+        -- empty string, emty list, number 0 etc are also considered False. Is this expected behaviour in your code?
         if not arg:
             return False
     return True
@@ -44,6 +49,7 @@ def args_to_be_empty(*args):
     :param args: parser arguments passed by main() from users or messages program
     :return: True is all args passed are None, otherwise False
     """
+    -- similar notes as in function above
     for arg in args:
         if arg:
             return False
@@ -56,7 +62,9 @@ def logging_user(user, password):
 
     :param user: User class object
     :param password: password user in log in, string type. Passed through parser
+    -- I do not understand password description
     :return: True if password matches user password, otherwise False. Also False if user is None
+    -- perhaps this function should raise some exception when user or password is None or empty?
     """
     if not user:
         print('No such user in database')
