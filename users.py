@@ -1,3 +1,5 @@
+-- no module docstring
+
 from models import User, connector
 from argparse import ArgumentParser
 from clcrypto import is_password_correct
@@ -10,9 +12,12 @@ def save_new_user(_cursor, username, password):
     Saves new user to DB through User class. Strictly used with connector decorator.
 
     :param _cursor: parameter passed with connector decorator
+    -- no descrption of what _cursor is
     :param username: username of new user, string type
+    -- put type in :type username: clause
     :param password: password of new user, string type
     :return: Function has only one return if shield IF statement detects that password does not meet requirements.
+    -- this function returns None always
     """
     if not is_password_correct(password):
         return
@@ -28,28 +33,37 @@ def change_password(_cursor, user, new_password):
     """
     Changes password through User class. Strictly used with connector decorator.
     This function is launched only if main() finds given user in DB. Hence user param cannot be empty.
+    -- you may assume here that user param is not empty, but don't assume that this function is called from main
+    -- what is you refactor your code?
 
     :param _cursor: parameter passed with connector decorator
     :param user: User class object, loaded from DB.
     :param new_password: new password to be set, string type. Checked by IF statement
+    -- as a user if change_password() function I don't have to know that you are using any IF to check it
     :return: as wrapped function has no return. Function prints only success statement
+    -- it returns None
+    -- printing should be described above, not in :return: line
     """
     if is_password_correct(new_password):
         user.set_password(new_password)
         user.save_to_db(_cursor)
         print('Password changed!')
-
+    -- maybe some error or exception when password is incorrect?
+    -- how can calling function know that this function failed to do it's work?
 
 @connector
 def delete_user(_cursor, user):
     """
     Deletes user through User class. Is launched by main() only if validation of username and password is successful.
     User parameter cannot be empty, otherwise main() won't launch this function.
+    -- same comment about main() logic
     Used strictly with connector decorator
 
     :param _cursor: parameter passed with connector decorator
     :param user: User class object, loaded from DB
     :return: as wrapped function has no return. Function prints success statement
+    -- it returns None
+    -- printing should be described above, not in :return: line
     """
     user.delete(_cursor)
     print('user deleted!')
@@ -63,6 +77,8 @@ def load_all_users_in_db(_cursor):
 
     :param _cursor: parameter passed with connector decorator
     :return: function has no return. Prints all users, pair of '{id}; {username}' in each line.
+    -- it returns None
+    -- printing should be described above, not in :return: line
     """
     users = User.load_all_users(_cursor)
     for user in users:
@@ -91,6 +107,7 @@ def main(parser):
 
     :param parser: ArgumentParser class. Created in set_parser_arguments()
     :return: function has no return
+    -- it returns None
     """
     args = parser.parse_args()
     username = args.username
@@ -102,6 +119,7 @@ def main(parser):
 
     user = load_user(username=username)
 
+    -- description of scenarios should be in the code as described in review of messages.py
     # Scenario no. 1
     if args_required(username, password) and args_to_be_empty(new_pass, users_list, delete, edit):
         if not user:
@@ -130,6 +148,7 @@ def main(parser):
 
     # Scenario no. 5
     else:
+        -- print() and then parser.print_help() ?
         print("""You have used wrong arguments combination. See below scenarios:
         -u USERNAME -p PASSWORD | creates new user
         -u USERNAME -p PASSWORD -n NEWPASS -e | sets new password
@@ -169,6 +188,6 @@ def set_parser_arguments():
                         )
     return parser
 
-
+-- add if __name__ == '__main__'
 parser_args = set_parser_arguments()
 main(parser_args)
